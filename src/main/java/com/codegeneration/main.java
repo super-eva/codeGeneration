@@ -9,19 +9,24 @@ import com.sun.codemodel.ClassType;
 import com.sun.codemodel.JClassAlreadyExistsException;
 import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JDefinedClass;
+import com.sun.codemodel.JFieldVar;
+import com.sun.codemodel.JMethod;
+import com.sun.codemodel.JMod;
 
 public class main {
 
 	public static void main(String args[]) {
 		
 	    Scanner in = new Scanner(System.in);
-		String functionName;
 
+	    System.out.println("Enter a packageName");
+	    String packageName = in.nextLine();
+	    
 	    System.out.println("Enter a functionName");
-	    functionName = in.nextLine();
+	    String functionName = in.nextLine();
 	    
 		try {
-			main.generateSource(functionName);
+			main.generateSource(packageName, functionName);
         } catch (JClassAlreadyExistsException ex) {
             ex.printStackTrace();
         } catch (IOException ex) {
@@ -29,7 +34,7 @@ public class main {
         }
 	}
 
-	public static void generateSource(String functionName) throws JClassAlreadyExistsException, IOException {
+	public static void generateSource(String packageName, String functionName) throws JClassAlreadyExistsException, IOException {
 		// Instantiate an instance of the JCodeModel class
 		JCodeModel codeModel = new JCodeModel();
 		
@@ -37,19 +42,17 @@ public class main {
 		String newFunctionName = Character.toUpperCase(functionName.charAt(0)) + functionName.substring(1);
 		
 		// JDefinedClass will let you create a class in a specified package.
-		JDefinedClass interfaceFacade = codeModel._class("com.lttc.cbt."+functionName+".facade.I"+newFunctionName, ClassType.INTERFACE);
-		JDefinedClass classService = codeModel._class("com.lttc.cbt."+functionName+".service.I"+newFunctionName, ClassType.INTERFACE);
-		JDefinedClass classFacade = codeModel._class("com.lttc.cbt."+functionName+".facade.impl."+newFunctionName, ClassType.CLASS);
-		JDefinedClass interfaceService = codeModel._class("com.lttc.cbt."+functionName+".service.impl."+newFunctionName, ClassType.CLASS);
+		JDefinedClass interfaceFacade = codeModel._class(JMod.PUBLIC, "com.lttc.cbt."+packageName+".facade.I"+newFunctionName+"Facade", ClassType.INTERFACE);
+		JDefinedClass interfaceService = codeModel._class(JMod.PUBLIC, "com.lttc.cbt."+packageName+".service.I"+newFunctionName+"Service", ClassType.INTERFACE);
+		JDefinedClass classFacade = codeModel._class(JMod.PUBLIC, "com.lttc.cbt."+packageName+".facade.impl."+newFunctionName+"Facade", ClassType.CLASS);
+		JDefinedClass classService = codeModel._class(JMod.PUBLIC, "com.lttc.cbt."+packageName+".service.impl."+newFunctionName+"Service", ClassType.CLASS);
 
-//		classFacade._implements(interfaceFacade);
-//		classFacade._implements(interfaceService);
+		//add annotation
 		classFacade.annotate(codeModel.ref("org.springframework.stereotype.Component")).param("value", "value = "+functionName+"Facade");
 		classService.annotate(codeModel.ref("org.springframework.stereotype.Component")).param("value", "value = "+functionName+"Service");
 		
-		
 		// Creating private fields in the class
-//		JFieldVar field1 = classToBeCreated.field(JMod.PRIVATE, Long.class, "foo");
+		JFieldVar facadefield = classFacade.field(0, interfaceService, functionName+"Service");
 
 		// The codeModel instance will have a list of Java primitives which can
 		// be
@@ -57,7 +60,26 @@ public class main {
 //		JFieldVar field2 = classToBeCreated.field(JMod.PRIVATE, codeModel.DOUBLE, "bar");
 
 		// Create getter and setter methods for the fields
-//		JMethod field1GetterMethod = classToBeCreated.method(JMod.PUBLIC, field1.type(), "getFoo");
+		JMethod facadeInsert = interfaceFacade.method(JMod.PUBLIC, void.class, "insert");
+		JMethod facadeUpdate = interfaceFacade.method(JMod.PUBLIC, void.class, "update");
+		JMethod facadeDelete = interfaceFacade.method(JMod.PUBLIC, void.class, "delete");
+		JMethod facadeGetList = interfaceFacade.method(JMod.PUBLIC, void.class, "getList");
+		
+		JMethod serviceInsert = interfaceService.method(JMod.PUBLIC, void.class, "insert");
+		JMethod serviceUpdate = interfaceService.method(JMod.PUBLIC, void.class, "update");
+		JMethod serviceDelete = interfaceService.method(JMod.PUBLIC, void.class, "delete");
+		JMethod serviceGetList = interfaceService.method(JMod.PUBLIC, void.class, "getList");
+		
+		//implements interface
+		classFacade._implements(interfaceFacade);
+		classService._implements(interfaceService);
+				
+		
+		facadefield.annotate(codeModel.ref("org.springframework.beans.factory.annotation.Autowired"));
+		facadefield.annotate(codeModel.ref("org.springframework.beans.factory.annotation.Qualifier")).param("value", "value = "+functionName+"Service");
+		//insert.annotate(codeModel.ref("org.springframework.beans.factory.annotation.Autowired"));
+
+
 		// code to create a return statement with the field1
 //		field1GetterMethod.body()._return(field1);
 //		JMethod field1SetterMethod = classToBeCreated.method(JMod.PUBLIC, codeModel.VOID, "setFoo");
