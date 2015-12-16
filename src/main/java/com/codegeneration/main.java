@@ -47,38 +47,33 @@ public class main {
 		JDefinedClass classFacade = codeModel._class(JMod.PUBLIC, "com.lttc.cbt."+packageName+".facade.impl."+newFunctionName+"Facade", ClassType.CLASS);
 		JDefinedClass classService = codeModel._class(JMod.PUBLIC, "com.lttc.cbt."+packageName+".service.impl."+newFunctionName+"Service", ClassType.CLASS);
 
+		//implements interface
+		classFacade._implements(interfaceFacade);
+		classService._implements(interfaceService);
+		
 		//add annotation
 		classFacade.annotate(codeModel.ref("org.springframework.stereotype.Component")).param("value", "value = "+functionName+"Facade");
 		classService.annotate(codeModel.ref("org.springframework.stereotype.Component")).param("value", "value = "+functionName+"Service");
 		
 		// Creating private fields in the class
 		JFieldVar facadefield = classFacade.field(0, interfaceService, functionName+"Service");
-
+		facadefield.annotate(codeModel.ref("org.springframework.beans.factory.annotation.Autowired"));
+		facadefield.annotate(codeModel.ref("org.springframework.beans.factory.annotation.Qualifier")).param("value", "value = "+functionName+"Service");
+		
 		// The codeModel instance will have a list of Java primitives which can
 		// be
 		// used to create a primitive field in the new class
 //		JFieldVar field2 = classToBeCreated.field(JMod.PRIVATE, codeModel.DOUBLE, "bar");
 
 		// Create getter and setter methods for the fields
-		JMethod facadeInsert = interfaceFacade.method(JMod.PUBLIC, void.class, "insert");
-		JMethod facadeUpdate = interfaceFacade.method(JMod.PUBLIC, void.class, "update");
-		JMethod facadeDelete = interfaceFacade.method(JMod.PUBLIC, void.class, "delete");
-		JMethod facadeGetList = interfaceFacade.method(JMod.PUBLIC, void.class, "getList");
+		JMethod interfaceFacadeExample = interfaceFacade.method(JMod.PUBLIC, void.class, "example");
+		JMethod classFacadeExample = classFacade.method(JMod.PUBLIC, void.class, "example");
+		//classFacadeExample.annotate(codeModel.ref("java.lang.Override"));
+		classFacadeExample.annotate(codeModel.ref("org.springframework.transaction.annotation.Transactional"));
 		
-		JMethod serviceInsert = interfaceService.method(JMod.PUBLIC, void.class, "insert");
-		JMethod serviceUpdate = interfaceService.method(JMod.PUBLIC, void.class, "update");
-		JMethod serviceDelete = interfaceService.method(JMod.PUBLIC, void.class, "delete");
-		JMethod serviceGetList = interfaceService.method(JMod.PUBLIC, void.class, "getList");
-		
-		//implements interface
-		classFacade._implements(interfaceFacade);
-		classService._implements(interfaceService);
-				
-		
-		facadefield.annotate(codeModel.ref("org.springframework.beans.factory.annotation.Autowired"));
-		facadefield.annotate(codeModel.ref("org.springframework.beans.factory.annotation.Qualifier")).param("value", "value = "+functionName+"Service");
-		//insert.annotate(codeModel.ref("org.springframework.beans.factory.annotation.Autowired"));
-
+		JMethod interfaceServiceExample = interfaceService.method(JMod.PUBLIC, void.class, "example");
+		JMethod classServiceExample = classService.method(JMod.PUBLIC, void.class, "example");
+		//classServiceExample.annotate(codeModel.ref("java.lang.Override"));
 
 		// code to create a return statement with the field1
 //		field1GetterMethod.body()._return(field1);
