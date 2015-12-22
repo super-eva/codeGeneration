@@ -2,6 +2,7 @@ package com.codegeneration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -19,14 +20,21 @@ public class main {
 		
 	    Scanner in = new Scanner(System.in);
 
+	    System.out.println("Enter a path");
+	    String path = in.nextLine();
+	    
 	    System.out.println("Enter a packageName");
 	    String packageName = in.nextLine();
 	    
 	    System.out.println("Enter a functionName");
 	    String functionName = in.nextLine();
 	    
+	    
+		System.out.println("Do u need basic CRUD? y or n");
+		String isNeedCRUD = in.nextLine();
+	    
 		try {
-			main.generateSource(packageName, functionName);
+			main.generateSource(path, packageName, functionName, isNeedCRUD);
         } catch (JClassAlreadyExistsException ex) {
             ex.printStackTrace();
         } catch (IOException ex) {
@@ -34,7 +42,7 @@ public class main {
         }
 	}
 
-	public static void generateSource(String packageName, String functionName) throws JClassAlreadyExistsException, IOException {
+	public static void generateSource(String path, String packageName, String functionName, String isNeedCRUD) throws JClassAlreadyExistsException, IOException {
 		// Instantiate an instance of the JCodeModel class
 		JCodeModel codeModel = new JCodeModel();
 		
@@ -66,13 +74,82 @@ public class main {
 //		JFieldVar field2 = classToBeCreated.field(JMod.PRIVATE, codeModel.DOUBLE, "bar");
 
 		// Create getter and setter methods for the fields
-		JMethod interfaceFacadeExample = interfaceFacade.method(JMod.PUBLIC, void.class, "example");
-		JMethod classFacadeExample = classFacade.method(JMod.PUBLIC, void.class, "example");
-		//classFacadeExample.annotate(codeModel.ref("java.lang.Override"));
-		classFacadeExample.annotate(codeModel.ref("org.springframework.transaction.annotation.Transactional"));
+		if("y".equals(isNeedCRUD)){
+			JDefinedClass filter = codeModel._class(JMod.PUBLIC, "com.lttc.cbt."+packageName+".filter."+newFunctionName+"Filter", ClassType.CLASS);
+
+			//facade interface mehthod
+			JMethod interfaceFacadeList = interfaceFacade.method(JMod.PUBLIC, void.class, "getList");
+			interfaceFacadeList.param(filter, functionName+"Filter");
+			JMethod interfaceFacadeSingle = interfaceFacade.method(JMod.PUBLIC, void.class, "getSingle");
+			interfaceFacadeSingle.param(String.class, "id");
+			JMethod interfaceFacadeInsert = interfaceFacade.method(JMod.PUBLIC, void.class, "insert");
+			interfaceFacadeInsert.param(Object.class, "data");
+			JMethod interfaceFacadeUpdate = interfaceFacade.method(JMod.PUBLIC, void.class, "update");
+			interfaceFacadeUpdate.param(Object.class, "data");
+			JMethod interfaceFacadeDelete = interfaceFacade.method(JMod.PUBLIC, void.class, "delete");
+			interfaceFacadeDelete.param(String.class, "id");
+
+			//facade impl method
+			JMethod classFacadeList = classFacade.method(JMod.PUBLIC, void.class, "getList");
+			classFacadeList.param(filter, functionName+"Filter");
+			classFacadeList.annotate(codeModel.ref("org.springframework.transaction.annotation.Transactional"));
+			classFacadeList.annotate(codeModel.ref("java.lang.Override"));
+			
+			JMethod classFacadeSingle = classFacade.method(JMod.PUBLIC, void.class, "getSingle");
+			classFacadeSingle.param(String.class, "id");
+			classFacadeSingle.annotate(codeModel.ref("org.springframework.transaction.annotation.Transactional"));
+			classFacadeSingle.annotate(codeModel.ref("java.lang.Override"));
+			
+			JMethod classFacadeInsert = classFacade.method(JMod.PUBLIC, void.class, "insert");
+			classFacadeInsert.param(Object.class, "data");
+			classFacadeInsert.annotate(codeModel.ref("org.springframework.transaction.annotation.Transactional"));
+			classFacadeInsert.annotate(codeModel.ref("java.lang.Override"));
+			
+			JMethod classFacadeUpdate = classFacade.method(JMod.PUBLIC, void.class, "update");
+			classFacadeUpdate.param(Object.class, "data");
+			classFacadeUpdate.annotate(codeModel.ref("org.springframework.transaction.annotation.Transactional"));
+			classFacadeUpdate.annotate(codeModel.ref("java.lang.Override"));
+			
+			JMethod classFacadeDelete = classFacade.method(JMod.PUBLIC, void.class, "delete");
+			classFacadeDelete.param(String.class, "id");
+			classFacadeDelete.annotate(codeModel.ref("org.springframework.transaction.annotation.Transactional"));
+			classFacadeDelete.annotate(codeModel.ref("java.lang.Override"));
+			
+			//service method
+			JMethod interfaceServiceList = interfaceService.method(JMod.PUBLIC, void.class, "getList");
+			interfaceServiceList.param(filter, functionName+"Filter");
+			JMethod interfaceServiceSingle = interfaceService.method(JMod.PUBLIC, void.class, "getSingle");
+			interfaceServiceSingle.param(String.class, "id");
+			JMethod interfaceServiceInsert = interfaceService.method(JMod.PUBLIC, void.class, "insert");
+			interfaceServiceInsert.param(Object.class, "data");
+			JMethod interfaceServiceUpdate = interfaceService.method(JMod.PUBLIC, void.class, "update");
+			interfaceServiceUpdate.param(Object.class, "data");
+			JMethod interfaceServiceDelete = interfaceService.method(JMod.PUBLIC, void.class, "delete");
+			interfaceServiceDelete.param(String.class, "id");
+
+			
+			//service impl method
+			JMethod classServiceList = classService.method(JMod.PUBLIC, void.class, "getList");
+			classServiceList.param(filter, functionName+"Filter");
+			classServiceList.annotate(codeModel.ref("java.lang.Override"));
+			
+			JMethod classServiceSingle = classService.method(JMod.PUBLIC, void.class, "getSingle");
+			classServiceSingle.param(String.class, "id");
+			classServiceSingle.annotate(codeModel.ref("java.lang.Override"));
+			
+			JMethod classServiceInsert = classService.method(JMod.PUBLIC, void.class, "insert");
+			classServiceInsert.param(Object.class, "data");
+			classServiceInsert.annotate(codeModel.ref("java.lang.Override"));
+			
+			JMethod classServiceUpdate = classService.method(JMod.PUBLIC, void.class, "update");
+			classServiceUpdate.param(Object.class, "data");
+			classServiceUpdate.annotate(codeModel.ref("java.lang.Override"));
+			
+			JMethod classServiceDelete = classService.method(JMod.PUBLIC, void.class, "delete");
+			classServiceDelete.param(String.class, "id");
+			classServiceDelete.annotate(codeModel.ref("java.lang.Override"));
+		}		
 		
-		JMethod interfaceServiceExample = interfaceService.method(JMod.PUBLIC, void.class, "example");
-		JMethod classServiceExample = classService.method(JMod.PUBLIC, void.class, "example");
 		//classServiceExample.annotate(codeModel.ref("java.lang.Override"));
 
 		// code to create a return statement with the field1
@@ -114,6 +191,6 @@ public class main {
 //		enumConst.arg(JExpr.lit(true));
 
 		// This will generate the code in the specified file path.
-		codeModel.build(new File("src/main/java"));
+		codeModel.build(new File(path+"src/main/java"));
 	}
 }
